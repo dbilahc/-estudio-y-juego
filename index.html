@@ -493,6 +493,86 @@
     .acciones-fila.una { grid-template-columns: 1fr; }
 
     /* ------------------------------------------------------------
+       PREMIO: PARTIDA AL SNAKE (solo con un 100 %)
+       ------------------------------------------------------------ */
+    .premio {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: clamp(10px, 1.6vh, 14px) 14px;
+      border-radius: var(--radio);
+      border: 2px solid var(--ambar);
+      background: rgba(251, 191, 36, 0.12);
+      color: var(--texto);
+      text-align: left;
+      font-weight: 700;
+      animation: brillo 1.6s ease-in-out infinite;
+    }
+    .premio .premio-emoji { font-size: 1.9em; line-height: 1; }
+    .premio .premio-texto { flex: 1; min-width: 0; }
+    .premio strong { display: block; font-family: 'Fredoka', sans-serif; font-size: 1.05em; color: var(--ambar); }
+    .premio .premio-sub { display: block; font-size: 0.8em; color: var(--texto-2); }
+    .premio svg.lucide { color: var(--ambar); }
+    @keyframes brillo { 50% { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.15); } }
+
+    .snake-zona {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .snake-zona canvas { display: block; border-radius: 12px; border: 2px solid var(--borde); }
+    .snake-mensaje {
+      position: absolute;
+      left: 50%;
+      top: 28%;
+      transform: translate(-50%, -50%);
+      width: min(86%, 360px);
+      padding: 16px 18px;
+      text-align: center;
+      border-radius: var(--radio);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid var(--borde);
+      pointer-events: none;
+    }
+    .snake-mensaje .sm-titulo { font-family: 'Fredoka', sans-serif; font-size: 1.3em; font-weight: 700; color: var(--ambar); }
+    .snake-mensaje .sm-texto { margin-top: 4px; font-size: 0.88em; color: var(--texto-2); }
+
+    .cruceta {
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, clamp(54px, 9vh, 80px));
+      grid-template-rows: repeat(2, clamp(44px, 7vh, 64px));
+      gap: 6px;
+      justify-content: center;
+    }
+    .cruceta button {
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      border: 1px solid var(--borde);
+      background: var(--tarjeta);
+      color: var(--texto);
+    }
+    .cruceta button:active { background: var(--acento); border-color: var(--acento); }
+    .cruceta button svg.lucide { width: 1.5em; height: 1.5em; }
+    .cruceta .arriba { grid-column: 2; grid-row: 1; }
+    .cruceta .izquierda { grid-column: 1; grid-row: 2; }
+    .cruceta .abajo { grid-column: 2; grid-row: 2; }
+    .cruceta .derecha { grid-column: 3; grid-row: 2; }
+    @media (hover: hover) and (pointer: fine) { .cruceta { display: none; } }
+    @media (orientation: landscape) and (max-height: 540px) {
+      .cruceta { grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(2, 38px); }
+    }
+
+    /* ------------------------------------------------------------
        AJUSTES PARA PANTALLAS BAJAS
        ------------------------------------------------------------ */
     @media (orientation: portrait) and (max-height: 640px) {
@@ -645,6 +725,15 @@
           <div class="estadistica"><span>Efectividad</span><strong id="r-porcentaje" class="verde">0%</strong></div>
         </div>
 
+        <button id="btn-premio" class="premio" type="button" hidden>
+          <span class="premio-emoji" aria-hidden="true">🐍</span>
+          <span class="premio-texto">
+            <strong>¡100 %! Has ganado un premio</strong>
+            <span class="premio-sub">Toca aquí para jugar una partida al Snake</span>
+          </span>
+          <i data-lucide="gift"></i>
+        </button>
+
         <div id="r-pestanas" class="pestanas" role="tablist">
           <button id="tab-ranking" type="button" role="tab" aria-selected="true"><i data-lucide="trophy"></i> Ranking</button>
           <button id="tab-fallos" type="button" role="tab" aria-selected="false"><i data-lucide="book-open"></i> Repasar fallos <span id="r-num-fallos"></span></button>
@@ -655,8 +744,38 @@
 
         <div id="r-acciones" class="acciones-fila">
           <button id="btn-inicio" class="btn btn-secundario" type="button"><i data-lucide="home"></i> Inicio</button>
-          <button id="btn-repetir" class="btn btn-primario" type="button"><i data-lucide="rotate-ccw"></i> Jugar otra vez</button>
+          <button id="btn-repetir" class="btn btn-primario" type="button"><i data-lucide="rotate-ccw"></i> Repetir</button>
         </div>
+      </section>
+
+      <!-- ========================================================
+           PANTALLA 4: PREMIO SNAKE
+           ======================================================== -->
+      <section id="pantalla-snake" class="pantalla snake" aria-label="Premio: partida al Snake">
+        <div class="barra-superior">
+          <button id="btn-snake-salir" class="btn-icono pequeno" type="button" aria-label="Terminar la partida"><i data-lucide="x"></i></button>
+          <span class="chip">🐍 Premio: Snake</span>
+          <span class="marcador puntos" aria-label="Manzanas comidas"><i data-lucide="apple"></i><span id="s-puntos">0</span></span>
+        </div>
+
+        <div id="s-zona" class="snake-zona">
+          <canvas id="s-lienzo" aria-label="Tablero del Snake"></canvas>
+          <div id="s-mensaje" class="snake-mensaje" aria-live="polite">
+            <p id="s-msg-titulo" class="sm-titulo"></p>
+            <p id="s-msg-texto" class="sm-texto"></p>
+          </div>
+        </div>
+
+        <div id="s-cruceta" class="cruceta">
+          <button type="button" class="arriba" data-dir="arriba" aria-label="Arriba"><i data-lucide="arrow-up"></i></button>
+          <button type="button" class="izquierda" data-dir="izquierda" aria-label="Izquierda"><i data-lucide="arrow-left"></i></button>
+          <button type="button" class="abajo" data-dir="abajo" aria-label="Abajo"><i data-lucide="arrow-down"></i></button>
+          <button type="button" class="derecha" data-dir="derecha" aria-label="Derecha"><i data-lucide="arrow-right"></i></button>
+        </div>
+
+        <button id="btn-snake-volver" class="btn btn-primario" type="button" hidden>
+          <i data-lucide="trophy"></i> Volver a los resultados
+        </button>
       </section>
 
     </main>
@@ -794,7 +913,8 @@
         correcto: ['triangle', 523.25, 783.99, 0.2, 0.35],
         fallo:    ['sawtooth', 220, 130.81, 0.12, 0.3],
         tic:      ['sine', 800, 800, 0.05, 0.05],
-        fin:      ['sine', 440, 880, 0.2, 0.5]
+        fin:      ['sine', 440, 880, 0.2, 0.5],
+        comer:    ['square', 660, 990, 0.06, 0.08]
       }[tipo];
       if (!ajustes) return;
       try {
@@ -1020,7 +1140,7 @@
     // 7. PANTALLAS Y PANTALLA COMPLETA
     // ----------------------------------------------------------------
     function mostrarPantalla(nombre) {
-      ['inicio', 'juego', 'resultados'].forEach((p) => {
+      ['inicio', 'juego', 'resultados', 'snake'].forEach((p) => {
         $('pantalla-' + p).classList.toggle('activa', p === nombre);
       });
       pintarIconos();
@@ -1329,6 +1449,8 @@
       $('r-aciertos').textContent = partida.puntos + '/' + total;
       $('r-porcentaje').textContent = porcentaje + '%';
       $('r-num-fallos').textContent = '(' + partida.fallos.length + ')';
+      // Premio: solo con un 100 % y solo una partida
+      $('btn-premio').hidden = porcentaje !== 100;
       mostrarPantalla('resultados');
 
       guardarPuntuacion(partida, porcentaje).then(() => cargarRanking(partida.ambito));
@@ -1349,6 +1471,7 @@
       $('btn-repetir').hidden = !esPartida;
       $('r-acciones').classList.toggle('una', !esPartida);
       $('r-aviso').hidden = true;
+      $('btn-premio').hidden = true;
       pintarLista();
     }
 
@@ -1473,7 +1596,271 @@
     }
 
     // ----------------------------------------------------------------
-    // 10. ARRANQUE Y EVENTOS
+    // 10. PREMIO: UNA PARTIDA AL SNAKE
+    // ----------------------------------------------------------------
+    const DIRECCIONES = {
+      arriba: { x: 0, y: -1 }, abajo: { x: 0, y: 1 },
+      izquierda: { x: -1, y: 0 }, derecha: { x: 1, y: 0 }
+    };
+    const COLORES_SNAKE = {
+      casillaA: '#141f33', casillaB: '#18253b',
+      cuerpo: '#10b981', cabeza: '#34d399', ojos: '#052e1f',
+      manzana: '#f43f5e', hoja: '#6ee7b7'
+    };
+    let S = null;
+
+    function abrirSnake() {
+      // El premio se gasta al abrirlo: una sola partida
+      $('btn-premio').hidden = true;
+      mostrarPantalla('snake');
+      prepararAudio();
+
+      const zona = $('s-zona');
+      const ancho = zona.clientWidth - 4;
+      const alto = zona.clientHeight - 4;
+      const celda = Math.max(10, Math.floor(Math.min(ancho, alto) / 15));
+      const cols = Math.min(30, Math.max(8, Math.floor(ancho / celda)));
+      const filas = Math.min(30, Math.max(8, Math.floor(alto / celda)));
+
+      const inicio = { x: Math.floor(cols / 4), y: Math.floor(filas / 2) };
+      S = {
+        cols: cols, filas: filas, celda: celda,
+        cuerpo: [inicio], crecer: 2,
+        dir: { x: 0, y: 0 }, colaDir: [],
+        comida: null, puntos: 0, intervalo: 170,
+        empezado: false, vivo: false, pausado: false, terminado: false, temp: null
+      };
+      nuevaComida();
+      ajustarLienzo();
+
+      $('s-puntos').textContent = '0';
+      $('s-cruceta').hidden = false;
+      $('btn-snake-volver').hidden = true;
+      mensajeSnake('¡A por las manzanas!', esTactil
+        ? 'Desliza el dedo o usa las flechas de abajo para empezar.'
+        : 'Pulsa una flecha del teclado para empezar.');
+      dibujarSnake();
+    }
+
+    function ajustarLienzo() {
+      if (!S) return;
+      const zona = $('s-zona');
+      const celda = Math.max(6, Math.floor(Math.min((zona.clientWidth - 4) / S.cols, (zona.clientHeight - 4) / S.filas)));
+      S.celda = celda;
+      const lienzo = $('s-lienzo');
+      const dpr = window.devicePixelRatio || 1;
+      lienzo.style.width = S.cols * celda + 'px';
+      lienzo.style.height = S.filas * celda + 'px';
+      lienzo.width = Math.round(S.cols * celda * dpr);
+      lienzo.height = Math.round(S.filas * celda * dpr);
+      lienzo.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function mensajeSnake(titulo, texto) {
+      $('s-msg-titulo').textContent = titulo;
+      $('s-msg-texto').textContent = texto;
+      $('s-mensaje').hidden = false;
+    }
+
+    function nuevaComida() {
+      const libres = [];
+      for (let x = 0; x < S.cols; x++) {
+        for (let y = 0; y < S.filas; y++) {
+          if (!S.cuerpo.some((p) => p.x === x && p.y === y)) libres.push({ x: x, y: y });
+        }
+      }
+      S.comida = libres.length ? libres[Math.floor(Math.random() * libres.length)] : null;
+    }
+
+    function girarSnake(nombre) {
+      if (!S || S.terminado) return;
+      const d = DIRECCIONES[nombre];
+      if (!d) return;
+      const ultima = S.colaDir.length ? S.colaDir[S.colaDir.length - 1] : S.dir;
+      const marchaAtras = d.x === -ultima.x && d.y === -ultima.y && (ultima.x !== 0 || ultima.y !== 0);
+      if (marchaAtras && S.cuerpo.length > 1) return;
+      if (!(d.x === ultima.x && d.y === ultima.y) && S.colaDir.length < 3) S.colaDir.push(d);
+
+      if (!S.empezado || S.pausado) {
+        S.empezado = true;
+        S.vivo = true;
+        S.pausado = false;
+        $('s-mensaje').hidden = true;
+        clearTimeout(S.temp);
+        S.temp = setTimeout(bucleSnake, S.intervalo);
+      }
+    }
+
+    function bucleSnake() {
+      if (!S || !S.vivo || S.pausado) return;
+      pasoSnake();
+      if (S.vivo) S.temp = setTimeout(bucleSnake, S.intervalo);
+    }
+
+    function pasoSnake() {
+      if (S.colaDir.length) S.dir = S.colaDir.shift();
+      const cabeza = S.cuerpo[0];
+      const nueva = { x: cabeza.x + S.dir.x, y: cabeza.y + S.dir.y };
+
+      const fuera = nueva.x < 0 || nueva.y < 0 || nueva.x >= S.cols || nueva.y >= S.filas;
+      const cuerpoQueQueda = S.crecer > 0 ? S.cuerpo : S.cuerpo.slice(0, -1);
+      const choca = cuerpoQueQueda.some((p) => p.x === nueva.x && p.y === nueva.y);
+      if (fuera || choca) { finSnake(false); return; }
+
+      S.cuerpo.unshift(nueva);
+      if (S.comida && nueva.x === S.comida.x && nueva.y === S.comida.y) {
+        S.puntos++;
+        S.crecer++;
+        $('s-puntos').textContent = S.puntos;
+        sonido('comer');
+        S.intervalo = Math.max(75, S.intervalo - 4); // un poco más rápido con cada manzana
+        nuevaComida();
+      }
+      if (S.crecer > 0) S.crecer--; else S.cuerpo.pop();
+
+      dibujarSnake();
+      if (!S.comida) finSnake(true);
+    }
+
+    function finSnake(victoria) {
+      S.vivo = false;
+      S.terminado = true;
+      clearTimeout(S.temp);
+      sonido(victoria ? 'fin' : 'fallo');
+      dibujarSnake();
+      const n = S.puntos;
+      mensajeSnake(victoria ? '¡Increíble, has llenado el tablero!' : '¡Fin de la partida!',
+        'Has comido ' + n + (n === 1 ? ' manzana' : ' manzanas') + ' 🍎. ¡Enhorabuena por tu 100 %!');
+      $('s-cruceta').hidden = true;
+      $('btn-snake-volver').hidden = false;
+      pintarIconos();
+    }
+
+    function salirDelSnake() {
+      if (S && S.vivo && !confirm('¿Terminar la partida al Snake? El premio no se puede repetir.')) return;
+      if (S && !S.terminado) {
+        S.vivo = false;
+        S.terminado = true;
+        clearTimeout(S.temp);
+      }
+      mostrarPantalla('resultados');
+    }
+
+    function rectRedondeado(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    function dibujarSnake() {
+      if (!S) return;
+      const ctx = $('s-lienzo').getContext('2d');
+      const c = S.celda;
+
+      // Tablero de cuadros
+      for (let x = 0; x < S.cols; x++) {
+        for (let y = 0; y < S.filas; y++) {
+          ctx.fillStyle = (x + y) % 2 ? COLORES_SNAKE.casillaB : COLORES_SNAKE.casillaA;
+          ctx.fillRect(x * c, y * c, c, c);
+        }
+      }
+
+      // Manzana
+      if (S.comida) {
+        const mx = S.comida.x * c + c / 2;
+        const my = S.comida.y * c + c / 2;
+        ctx.fillStyle = COLORES_SNAKE.manzana;
+        ctx.beginPath();
+        ctx.arc(mx, my + c * 0.05, c * 0.36, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = COLORES_SNAKE.hoja;
+        ctx.beginPath();
+        ctx.ellipse(mx + c * 0.12, my - c * 0.32, c * 0.13, c * 0.07, -0.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Serpiente
+      S.cuerpo.forEach((p, i) => {
+        const margen = i === 0 ? c * 0.06 : c * 0.12;
+        ctx.fillStyle = i === 0 ? COLORES_SNAKE.cabeza : COLORES_SNAKE.cuerpo;
+        rectRedondeado(ctx, p.x * c + margen, p.y * c + margen, c - margen * 2, c - margen * 2, c * 0.28);
+        ctx.fill();
+      });
+
+      // Ojos mirando hacia donde avanza
+      const cab = S.cuerpo[0];
+      const d = (S.dir.x || S.dir.y) ? S.dir : { x: 1, y: 0 };
+      const cx = cab.x * c + c / 2 + d.x * c * 0.14;
+      const cy = cab.y * c + c / 2 + d.y * c * 0.14;
+      const px = -d.y * c * 0.18;
+      const py = d.x * c * 0.18;
+      ctx.fillStyle = COLORES_SNAKE.ojos;
+      [1, -1].forEach((lado) => {
+        ctx.beginPath();
+        ctx.arc(cx + px * lado, cy + py * lado, Math.max(1.5, c * 0.08), 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function snakeActivo() {
+      return S && $('pantalla-snake').classList.contains('activa');
+    }
+
+    // Teclado: flechas o WASD
+    document.addEventListener('keydown', (e) => {
+      if (!snakeActivo()) return;
+      const mapa = {
+        ArrowUp: 'arriba', ArrowDown: 'abajo', ArrowLeft: 'izquierda', ArrowRight: 'derecha',
+        w: 'arriba', s: 'abajo', a: 'izquierda', d: 'derecha'
+      };
+      const nombre = mapa[e.key] || mapa[String(e.key).toLowerCase()];
+      if (nombre) { e.preventDefault(); girarSnake(nombre); }
+    });
+
+    // Deslizar el dedo sobre el tablero
+    (function configurarDeslizar() {
+      let inicioX = 0, inicioY = 0, siguiendo = false;
+      const zona = $('s-zona');
+      zona.addEventListener('touchstart', (e) => {
+        const t = e.touches[0];
+        inicioX = t.clientX; inicioY = t.clientY; siguiendo = true;
+      }, { passive: true });
+      zona.addEventListener('touchmove', (e) => {
+        if (!siguiendo) return;
+        e.preventDefault();
+        const t = e.touches[0];
+        const dx = t.clientX - inicioX, dy = t.clientY - inicioY;
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+        girarSnake(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'derecha' : 'izquierda') : (dy > 0 ? 'abajo' : 'arriba'));
+        inicioX = t.clientX; inicioY = t.clientY; // permite encadenar giros sin levantar el dedo
+      }, { passive: false });
+      zona.addEventListener('touchend', () => { siguiendo = false; });
+    })();
+
+    // Botones de la cruceta (pointerdown responde antes que click)
+    document.querySelectorAll('#s-cruceta button').forEach((b) => {
+      b.addEventListener('pointerdown', (e) => { e.preventDefault(); girarSnake(b.dataset.dir); });
+    });
+
+    // Pausa automática si se cambia de app o de pestaña
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && S && S.vivo && !S.pausado) {
+        S.pausado = true;
+        clearTimeout(S.temp);
+        mensajeSnake('Pausa', 'Pulsa una flecha o desliza el dedo para seguir.');
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (snakeActivo()) { ajustarLienzo(); dibujarSnake(); }
+    });
+
+    // ----------------------------------------------------------------
+    // 11. ARRANQUE Y EVENTOS
     // ----------------------------------------------------------------
     function iniciar() {
       const apodo = almacen.get('eyj_apodo');
@@ -1510,6 +1897,9 @@
       $('btn-repetir').addEventListener('click', empezar);
       $('tab-ranking').addEventListener('click', () => { pestanaActiva = 'ranking'; pintarLista(); });
       $('tab-fallos').addEventListener('click', () => { pestanaActiva = 'fallos'; pintarLista(); });
+      $('btn-premio').addEventListener('click', abrirSnake);
+      $('btn-snake-salir').addEventListener('click', salirDelSnake);
+      $('btn-snake-volver').addEventListener('click', () => mostrarPantalla('resultados'));
 
       configurarPantallaCompleta();
       pintarIconos();
